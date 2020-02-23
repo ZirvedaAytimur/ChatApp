@@ -3,6 +3,7 @@ const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
 const Filter = require('bad-words')
+const { generateMessage } = require('./utils/messages')
 
 const app = express()
 const server = http.createServer(app)
@@ -19,9 +20,9 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', (socket) => {
     console.log('New WebSocket connection')
 
-    socket.emit('message', 'Welcome') //clienta bir şey yollamaya çalışıyoruz
+    socket.emit('message', generateMessage('Welcome')) //clienta bir şey yollamaya çalışıyoruz
     // burada yaptığımız değişiklik diğer açtığımız yerlerde görünmüyordu
-    socket.broadcast.emit('message', 'A new user has joined!') // I will send everybody except this user
+    socket.broadcast.emit('message', generateMessage('A new user has joined!')) // I will send everybody except this user
 
     socket.on('sendMessage', (message, callback) => { //clienttan bir şey almaya çalışıyoruz
         const filter = new Filter()
@@ -30,7 +31,7 @@ io.on('connection', (socket) => {
             return callback('Profanity is not allowed!')
         }
 
-        io.emit('message', message) // her bağlantıda görünsün diye io kullandık
+        io.emit('message', generateMessage(message)) // her bağlantıda görünsün diye io kullandık
         callback() //mesaj başarıyla gitti mi kontrolü
     })
 
@@ -40,7 +41,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('disconnect', () => { //disconnect olduğunu anlıyor
-        io.emit('message', 'A user has left!')
+        io.emit('message', generateMessage('A user has left!'))
     })
 })
 

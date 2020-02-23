@@ -14,7 +14,8 @@ const locationMessageTemplate = document.querySelector('#location-message-templa
 socket.on('message', (message) => {
     console.log(message) //server can send something to client
     const html = Mustache.render(messageTemplate, { // yazdığımız mesaj ekranda görülüyor
-        message
+        message: message.text,
+        createdAt: moment(message.createdAt).format('h:mm a') // zaman formatı
     })
     $messages.insertAdjacentHTML('beforeend', html)
 })

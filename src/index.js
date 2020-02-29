@@ -20,9 +20,16 @@ app.use(express.static(publicDirectoryPath))
 io.on('connection', (socket) => {
     console.log('New WebSocket connection')
 
-    socket.emit('message', generateMessage('Welcome')) //clienta bir şey yollamaya çalışıyoruz
-    // burada yaptığımız değişiklik diğer açtığımız yerlerde görünmüyordu
-    socket.broadcast.emit('message', generateMessage('A new user has joined!')) // I will send everybody except this user
+    socket.on('join', ({ username, room }) => {
+        socket.join(room)
+
+        socket.emit('message', generateMessage('Welcome')) //clienta bir şey yollamaya çalışıyoruz
+        // burada yaptığımız değişiklik diğer açtığımız yerlerde görünmüyordu
+        socket.broadcast.to(room).emit('message', generateMessage(username + ' has joined!'))
+
+        // socket.emit, io.emit -- her bağlantıda görünsün diye io kullandık, socket.broadcast.emit -- kendi dışında herkese yolluyor
+        // io.to.emit -- emit everything in spesific room, socket.broadcast.to.emit -- sending an event to everyone except the specific client
+    })
 
     socket.on('sendMessage', (message, callback) => { //clienttan bir şey almaya çalışıyoruz
         const filter = new Filter()
@@ -31,7 +38,7 @@ io.on('connection', (socket) => {
             return callback('Profanity is not allowed!')
         }
 
-        io.emit('message', generateMessage(message)) // her bağlantıda görünsün diye io kullandık
+        io.to('cullok').emit('message', generateMessage(message))
         callback() //mesaj başarıyla gitti mi kontrolü
     })
 
